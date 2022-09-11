@@ -1,11 +1,11 @@
-# Project PROJECT_NAME
+# Project SHMUP
 
 [Markdown Cheatsheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Here-Cheatsheet)
 
 ### Student Info
 
--   Name: YOUR NAME
--   Section: ##
+-   Name: Vincent Le
+-   Section: 05
 
 ## Game Design
 
