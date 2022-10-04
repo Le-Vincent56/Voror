@@ -17,7 +17,7 @@
 
 ### Game Description
 
--   Vörðr is a game based on Vikings and Old Norse Mythology, where a Viking attempts to protect his village from the monsters of Hel. You play as Viggo, the guardian of the village Toft as the Rift of Hel as tore open. As most of the vikings have been sent to the frontline of the Rift, you were left behind to protect the rest of the village. Protect the villagers while fending off the mosnter of Hel and see if you were to be the destined defender of not only Toft, but the world.
+-   Vörðr is a game based on Vikings and Old Norse Mythology, where a Viking attempts to protect his village from the monsters of Hel. You play as Viggo, the guardian of the village Toft as the Gates of Hel has torn open. As most of the vikings have been sent to the frontline of the Gates, you were left behind to protect the rest of the village. Save the villagers while fending off the mosnter of Hel and see if you were to be the destined defender of not only Toft, but the world.
 
 ### Controls
 
