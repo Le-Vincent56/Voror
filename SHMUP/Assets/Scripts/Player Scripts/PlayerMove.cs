@@ -5,14 +5,15 @@ using UnityEngine.InputSystem;
 
 public class PlayerMove : MonoBehaviour
 {
-    // Fields
-    Vector3 playerPosition = new Vector3(0, 0, 0);
-    Vector3 direction = new Vector3(0, 0, 0);
+    #region FIELDS
+    public Vector3 playerPosition = new Vector3(0, 0, 0);
+    public Vector3 direction = new Vector3(0, 0, 0);
     Vector3 velocity = new Vector3(0, 0, 0);
 
-    public float speed = 5f;
+    public float speed = 3f;
 
     [SerializeField] bool moving = false;
+    #endregion
 
     // Start is called before the first frame update
     void Start()

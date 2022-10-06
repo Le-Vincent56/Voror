@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class HUDManager : MonoBehaviour
 {
+    [SerializeField] GameObject player;
     public float score;
     public float playerHealth;
 
@@ -14,7 +15,7 @@ public class HUDManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        playerHealth = player.GetComponent<PlayerStats>().currentHealth;
     }
 
     // Update is called once per frame
@@ -24,6 +25,7 @@ public class HUDManager : MonoBehaviour
         scoreLabel.text = "SCORE: " + score;
 
         // Update health bar
+        playerHealth = player.GetComponent<PlayerStats>().currentHealth;
         healthBar.value = playerHealth;
     }
 }
