@@ -12,13 +12,13 @@ public class PlayerMove : MonoBehaviour
 
     public float speed = 3f;
 
-    [SerializeField] bool moving = false;
+    public bool moving = false;
     #endregion
 
     // Start is called before the first frame update
     void Start()
     {
-        // Set the vehicle position
+        // Set the player position
         playerPosition = transform.position;
     }
 
@@ -37,10 +37,10 @@ public class PlayerMove : MonoBehaviour
 
         if (moving)
         {
-            // Add the velocity to the vehicle position
+            // Add the velocity to the player position
             playerPosition += velocity;
 
-            // Draw the vehicle at the position
+            // Draw the player at the position
             transform.position = playerPosition;
         }
     }

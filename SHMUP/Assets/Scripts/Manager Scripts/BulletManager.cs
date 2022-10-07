@@ -7,15 +7,12 @@ public class BulletManager : MonoBehaviour
 {
     #region FIELDS
     [SerializeField] GameObject bulletPrefab;
-    [SerializeField] List<GameObject> bullets;
     [SerializeField] GameObject player;
-    List<Vector3> bulletPositions;
-    List<Vector3> bulletDirections;
-    List<Vector3> bulletVelocities;
-    List<int> destroyedBulletIndexes = new List<int>();
-    Vector3 playerPosition;
-    Vector3 playerDirection;
-    public float bulletSpeed = 8f;
+    public List<GameObject> bulletList;
+    public List<GameObject> destroyedBullets;
+
+    bool canFire = true;
+    float fireCooldown = 0.5f;
 
     [SerializeField] Camera cam;
     float camHeight;
@@ -26,73 +23,103 @@ public class BulletManager : MonoBehaviour
     void Start()
     {
         camHeight = cam.orthographicSize;
-        camWidth = cam.orthographicSize * cam.aspect;
-
-        playerPosition = player.GetComponent<PlayerMove>().playerPosition;
-        playerDirection = player.GetComponent<PlayerMove>().direction;
+        camWidth = camHeight * cam.aspect;
     }
 
     // Update is called once per frame
     void Update()
     {
-        // Update player-based variables
-        playerPosition = player.GetComponent<PlayerMove>().playerPosition;
-        playerDirection = player.GetComponent<PlayerMove>().direction;
-
-        // Check if any bullets have been destroyed
-        for(int i = 0; i < bullets.Count; i++)
+        // Fire cooldown checks
+        if (!canFire)
         {
-            if (OutOfBounds(bullets[i]))
-            {
-                destroyedBulletIndexes.Add(i);
-            }
+            fireCooldown -= Time.deltaTime;
         }
 
-        // Destroy any bullets that need to be destroyed
-        if(destroyedBulletIndexes.Count > 0)
+        if(fireCooldown <= 0)
         {
-            foreach (int index in destroyedBulletIndexes)
+            canFire = true;
+            fireCooldown = 0.5f;
+        }
+
+        // Check bounds
+        CheckBounds();
+
+        // Remove destroyed bullets
+        RemoveDestroyedBullets();
+    }
+
+    public void SpawnBullet()
+    {
+        // Create bullet reference
+        GameObject bulletReference;
+        bulletReference = Instantiate(bulletPrefab);
+
+        // Set bullet position
+        bulletReference.GetComponent<Bullet>().bulletPosition = player.GetComponent<PlayerMove>().playerPosition;
+
+        // Add the reference to the list of bullets
+        bulletList.Add(bulletReference);
+    }
+
+    /// <summary>
+    /// Destroys a bullet if it leaves the screen
+    /// </summary>
+    public void CheckBounds()
+    {
+        foreach(GameObject bullet in bulletList)
+        {
+            if (bullet.transform.position.x - bullet.GetComponent<SpriteRenderer>().size.x > camWidth)
             {
-                Destroy(bullets[index]);
-                bullets.RemoveAt(index);
-                bulletPositions.RemoveAt(index);
-                bulletDirections.RemoveAt(index);
-                bulletVelocities.RemoveAt(index);
+                destroyedBullets.Add(bullet);
+            } else if (bullet.transform.position.x + bullet.GetComponent<SpriteRenderer>().size.x < -camWidth)
+            {
+                destroyedBullets.Add(bullet);
             }
 
-            destroyedBulletIndexes.Clear();
+            if (bullet.transform.position.y - bullet.GetComponent<SpriteRenderer>().size.x > camHeight)
+            {
+                destroyedBullets.Add(bullet);
+            }
+            else if (bullet.transform.position.y + bullet.GetComponent<SpriteRenderer>().size.x < -camHeight)
+            {
+                destroyedBullets.Add(bullet);
+            }
         }
-        
-        // Move all the bullets that have been fired
-        for(int i = 0; i < bullets.Count; i++)
+    }
+
+    public void RemoveDestroyedBullets()
+    {
+        // Check the list of destroyed bullets
+        if(destroyedBullets.Count > 0)
         {
-            bulletVelocities[i] = bulletDirections[i] * bulletSpeed * Time.deltaTime;
-            bulletPositions[i] += bulletVelocities[i];
-            bullets[i].transform.position = bulletPositions[i];
+            // Compare the list of destroyed bullets with the total bullets
+            for(int i = 0; i < destroyedBullets.Count; i++)
+            {
+                for(int j = 0; j < bulletList.Count; j++)
+                {
+                    // If any of the destroyed bullets are equal to any of the bullets
+                    // in the bulletList, remove them from the list
+                    if (destroyedBullets[i].Equals(bulletList[j]))
+                    {
+                        Destroy(bulletList[j]);
+                        bulletList.Remove(destroyedBullets[i]);
+                    }
+                }
+            }
+
+            // Clear the destroyed bullets list
+            destroyedBullets.Clear();
         }
     }
 
     public void OnFire(InputAction.CallbackContext context)
     {
-        GameObject bulletReference = Instantiate(bulletPrefab);
-
-        Vector3 bulletPosition = playerPosition;
-        Vector3 bulletDirection = playerDirection;
-        Vector3 bulletVelocity = bulletDirection * bulletSpeed;
-
-        bullets.Add(bulletReference);
-        bulletPositions.Add(bulletPosition);
-        bulletDirections.Add(bulletDirection);
-        bulletVelocities.Add(bulletVelocity);
-    }
-
-    public bool OutOfBounds(GameObject bullet)
-    {
-        if (bullet.transform.position.x > camWidth || bullet.transform.position.x < -camWidth ||
-            bullet.transform.position.y > camHeight || bullet.transform.position.y < -camHeight)
+        // Check if the player can fire
+        if (canFire)
         {
-            return true;
+            // Spawn a bullet and trigger cooldown
+            SpawnBullet();
+            canFire = false;
         }
-        else return false;
     }
 }

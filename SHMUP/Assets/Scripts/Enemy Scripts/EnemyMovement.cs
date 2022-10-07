@@ -11,7 +11,7 @@ public class EnemyMovement : MonoBehaviour
 
     public float speed = 5f;
 
-    [SerializeField] GameObject player;
+    [SerializeField] GameObject target;
     Vector3 playerPosition;
     Vector3 distanceToPlayer = new Vector3(0, 0, 0);
     #endregion
@@ -19,8 +19,9 @@ public class EnemyMovement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        target = GameObject.Find("Player");
         monsterPosition = transform.position;
-        playerPosition = player.transform.position;
+        playerPosition = target.transform.position;
     }
 
     // Update is called once per frame
@@ -28,7 +29,7 @@ public class EnemyMovement : MonoBehaviour
     {
         // Track player
         monsterPosition = transform.position;
-        playerPosition = player.transform.position;
+        playerPosition = target.transform.position;
         distanceToPlayer = playerPosition - monsterPosition;
         direction = distanceToPlayer.normalized;
 

@@ -99,7 +99,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 3
-  player: {fileID: 0}
+  target: {fileID: 0}
 --- !u!114 &9161812685754817977
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -113,4 +113,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 10
-  health: 50
+  maxHealth: 10
+  currentHealth: 10
+  value: 2
+  collided: 0
+  colorTimer: 0.5

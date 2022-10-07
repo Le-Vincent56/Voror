@@ -5,19 +5,25 @@ using UnityEngine;
 public class CollisionManager : MonoBehaviour
 {
     [SerializeField] List<GameObject> enemies;
+    [SerializeField] GameObject bulletManager;
+    [SerializeField] List<GameObject> bulletList;
     [SerializeField] GameObject player;
+    [SerializeField] GameObject enemyManager;
 
     public bool recentCollision = false;
     public float collisionTimer = 3f;
     public float blinkingTime = 0f;
     public float blinkingPeriod = 0.5f;
 
-
     // Update is called once per frame
     void Update()
     {
+        bulletList = bulletManager.GetComponent<BulletManager>().bulletList;
+        enemies = enemyManager.GetComponent<EnemyManager>().enemies;
+
+        #region PLAYER COLLISIONS
         // Check if there has been enough time to check for another collision
-        if(collisionTimer <= 0)
+        if (collisionTimer <= 0)
         {
             recentCollision = false;
             collisionTimer = 3f;
@@ -49,29 +55,47 @@ public class CollisionManager : MonoBehaviour
         {
             // Set default color
             player.GetComponent<SpriteRenderer>().color = Color.white;
-            foreach (GameObject enemy in enemies)
-            {
-                enemy.GetComponent<SpriteRenderer>().color = Color.white;
-            }
         }
 
         // Check each object within the list
         foreach (GameObject enemy in enemies)
         {
-            // If there are no current collisions, check for collisions
-            if (recentCollision == false)
+            if(enemy != null)
             {
-                if (AABBCollision(player, enemy))
+                // If there are no current collisions, check for collisions
+                if (recentCollision == false)
                 {
-                    recentCollision = true;
+                    if (AABBCollision(player, enemy))
+                    {
+                        recentCollision = true;
 
-                    // Change color if colliding
-                    player.GetComponent<PlayerStats>().currentHealth -= enemy.GetComponent<EnemyStats>().damage;
-                    player.GetComponent<SpriteRenderer>().color = Color.red;
-                    enemy.GetComponent<SpriteRenderer>().color = Color.red;
+                        // Change color if colliding
+                        player.GetComponent<PlayerStats>().currentHealth -= enemy.GetComponent<EnemyStats>().damage;
+                        player.GetComponent<SpriteRenderer>().color = Color.red;
+                        enemy.GetComponent<SpriteRenderer>().color = Color.red;
+                    }
                 }
             }
         }
+        #endregion
+
+        #region BULLET COLLISIONS
+        foreach (GameObject bullet in bulletList)
+        {
+            foreach (GameObject enemy in enemies)
+            {
+                if(enemy != null)
+                {
+                    if (AABBCollision(bullet, enemy))
+                    {
+                        enemy.GetComponent<EnemyStats>().collided = true;
+                        enemy.GetComponent<EnemyStats>().currentHealth -= bullet.GetComponent<Bullet>().damage;
+                        bulletManager.GetComponent<BulletManager>().destroyedBullets.Add(bullet);
+                    }
+                }
+            }
+        }
+        #endregion
     }
 
     /// <summary>
