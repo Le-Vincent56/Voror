@@ -10,6 +10,7 @@ public class EnemyMovement : MonoBehaviour
     Vector3 velocity = new Vector3(0, 0, 0);
 
     public float speed = 5f;
+    public bool moving = false;
 
     [SerializeField] GameObject target;
     Vector3 playerPosition;
@@ -27,17 +28,20 @@ public class EnemyMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // Track player
-        monsterPosition = transform.position;
-        playerPosition = target.transform.position;
-        distanceToPlayer = playerPosition - monsterPosition;
-        direction = distanceToPlayer.normalized;
+        if (moving)
+        {
+            // Track player
+            monsterPosition = transform.position;
+            playerPosition = target.transform.position;
+            distanceToPlayer = playerPosition - monsterPosition;
+            direction = distanceToPlayer.normalized;
 
-        // Calculate velocity
-        velocity = direction * speed * Time.deltaTime;
+            // Calculate velocity
+            velocity = direction * speed * Time.deltaTime;
 
-        // Move towards player
-        monsterPosition += velocity;
-        transform.position = monsterPosition;
+            // Move towards player
+            monsterPosition += velocity;
+            transform.position = monsterPosition;
+        }
     }
 }

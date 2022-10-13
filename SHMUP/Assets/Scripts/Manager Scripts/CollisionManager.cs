@@ -5,10 +5,12 @@ using UnityEngine;
 public class CollisionManager : MonoBehaviour
 {
     [SerializeField] List<GameObject> enemies;
-    [SerializeField] GameObject bulletManager;
+    [SerializeField] BulletManager bulletManager;
     [SerializeField] List<GameObject> bulletList;
     [SerializeField] GameObject player;
-    [SerializeField] GameObject enemyManager;
+    [SerializeField] List<GameObject> villagers;
+    [SerializeField] VillagerManager villagerManager;
+    [SerializeField] EnemyManager enemyManager;
 
     public bool recentCollision = false;
     public float collisionTimer = 3f;
@@ -18,8 +20,9 @@ public class CollisionManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        bulletList = bulletManager.GetComponent<BulletManager>().bulletList;
-        enemies = enemyManager.GetComponent<EnemyManager>().enemies;
+        bulletList = bulletManager.bulletList;
+        enemies = enemyManager.enemies;
+        villagers = villagerManager.villagers;
 
         #region PLAYER COLLISIONS
         // Check if there has been enough time to check for another collision
@@ -91,6 +94,26 @@ public class CollisionManager : MonoBehaviour
                         enemy.GetComponent<EnemyStats>().collided = true;
                         enemy.GetComponent<EnemyStats>().currentHealth -= bullet.GetComponent<Bullet>().damage;
                         bulletManager.GetComponent<BulletManager>().destroyedBullets.Add(bullet);
+                    }
+                }
+            }
+        }
+        #endregion
+
+        #region VILLAGER COLLISIONS
+        foreach(GameObject villager in villagers)
+        {
+            foreach (GameObject enemy in enemies)
+            {
+                if(enemy != null)
+                {
+                    if (!villager.GetComponent<VillagerStats>().collided)
+                    {
+                        if (AABBCollision(villager, enemy))
+                        {
+                            villager.GetComponent<VillagerStats>().collided = true;
+                            villager.GetComponent<VillagerStats>().currentHealth -= enemy.GetComponent<EnemyStats>().damage;
+                        }
                     }
                 }
             }

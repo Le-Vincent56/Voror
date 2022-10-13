@@ -11,8 +11,11 @@ public class EnemyManager : MonoBehaviour
     [SerializeField] List<GameObject> destroyedEnemies;
     [SerializeField] GameObject HUD;
     [SerializeField] Camera cam;
+    public int maxEnemiesThisRound = 5;
+    public int enemiesSpawnedThisRound = 0;
+    public int baseEnemies = 5;
+    public int bonusEnemiesPerRound = 3;
 
-    float maxEnemyCount = 5;
     float spawnCooldown = 3f;
     bool canSpawnEnemy = true;
 
@@ -27,6 +30,7 @@ public class EnemyManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        // Set bounds
         camHeight = cam.orthographicSize;
         camWidth = camHeight * cam.aspect;
 
@@ -37,17 +41,17 @@ public class EnemyManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // Spawn Enemies
-        SpawnEnemy();
-
-        // Check for collision color changing
+        // Blink on being damaged
         BlinkOnCollision();
 
         // Check for destroyed enemies and remove them
-        CheckDestroy();
+        CheckDestroyedEnemies();
         RemoveDestroyedEnemies();
     }
 
+    /// <summary>
+    /// Blink the enemy on collision
+    /// </summary>
     public void BlinkOnCollision()
     {
         foreach(GameObject enemy in enemies)
@@ -73,26 +77,37 @@ public class EnemyManager : MonoBehaviour
     /// <summary>
     /// Spawn an enemy
     /// </summary>
+    public void SpawnStartingEnemies()
+    {
+        for (int i = 0; i < baseEnemies; i++)
+        {
+            enemies.Add(CreateEnemy());
+        }
+    }
+
     public void SpawnEnemy()
     {
         // If an enemy can be spawned, spawn an enemy
         // If not, wait until there are less enemies than the max amount,
         // or until the cooldown resets
-        if(enemies.Count < maxEnemyCount && canSpawnEnemy)
+        if (enemiesSpawnedThisRound < maxEnemiesThisRound && canSpawnEnemy)
         {
             enemies.Add(CreateEnemy());
+            enemiesSpawnedThisRound = 0;
             canSpawnEnemy = false;
-        } else if (!canSpawnEnemy)
+        }
+        else if (!canSpawnEnemy)
         {
-            if(spawnCooldown > 0)
+            if (spawnCooldown > 0)
             {
                 spawnCooldown -= Time.deltaTime;
-            } else
+            }
+            else
             {
                 spawnCooldown = 3f;
                 canSpawnEnemy = true;
             }
-            
+
         }
     }
 
@@ -162,7 +177,7 @@ public class EnemyManager : MonoBehaviour
     /// <summary>
     /// Checks to see if an enemy should be destroyed
     /// </summary>
-    public void CheckDestroy()
+    public void CheckDestroyedEnemies()
     {
         foreach(GameObject enemy in enemies)
         {
@@ -179,16 +194,16 @@ public class EnemyManager : MonoBehaviour
     /// </summary>
     public void RemoveDestroyedEnemies()
     {
-        // Check the list of destroyed bullets
+        // Check the list of destroyed enemies
         if (destroyedEnemies.Count > 0)
         {
-            // Compare the list of destroyed bullets with the total bullets
+            // Compare the list of destroyed enemies with the total enemies
             for (int i = 0; i < destroyedEnemies.Count; i++)
             {
                 for (int j = 0; j < enemies.Count; j++)
                 {
-                    // If any of the destroyed bullets are equal to any of the bullets
-                    // in the bulletList, remove them from the list
+                    // If any of the destroyed enemies are equal to any of the enemies
+                    // in the enemy List, remove them from the List
                     if (destroyedEnemies[i].Equals(enemies[j]))
                     {
                         Destroy(enemies[j]);
@@ -197,7 +212,7 @@ public class EnemyManager : MonoBehaviour
                 }
             }
 
-            // Clear the destroyed bullets list
+            // Clear the destroyed enemies List
             destroyedEnemies.Clear();
         }
     }
