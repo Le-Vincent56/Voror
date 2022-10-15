@@ -38,6 +38,7 @@
 -   https://www.kenney.nl/assets/tiny-dungeon
 -   https://www.kenney.nl/assets/ui-pack-rpg-expansion
 -   https://opengameart.org/content/rune-pack
+-   https://www.kenney.nl/assets/crosshair-pack
 
 ## Known Issues
 
