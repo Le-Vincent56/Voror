@@ -27,12 +27,15 @@
     -   Left: A
     -   Right: D
 -   Fire: Left Click
+-   Dash: Shift
+-   Aim: Mouse
 
 ## Your Additions
 
 -   A mechanic of protecting a number of villagers from the monsters, adding both a bonus to the score depending on how many villagers are alive, as well as another type of lose condition besides health; you can lose if all the villagers die.
 -   Enemies will target whoever is closer, you or a villager. That might mean you have to put yourself in harms way to prevent the monsters from killing all the villagers.
 -   The effects of Sigils, or power-ups that allow for temporary boosts for the player, such as a speed-up and faster shooting and slashing. Sigils might also invoke the power of gods, such as striking an area with Thor's lightning, removing monsters within that area.
+-   Use your powerful dash to strike multiple enemies in quick succession while avoiding damage.
 
 ## Sources
 
@@ -40,6 +43,7 @@
 -   https://www.kenney.nl/assets/ui-pack-rpg-expansion
 -   https://opengameart.org/content/rune-pack
 -   https://www.kenney.nl/assets/crosshair-pack
+-   https://www.kenney.nl/assets/input-prompts-pixel-16
 
 ## Known Issues
 
