@@ -126,13 +126,13 @@ public class EnemyManager : MonoBehaviour
             }
             else if(spawnCooldown < 0)
             {
-                if(roundManager.roundNum < 3)
+                if(roundManager.roundNum <= 6)
                 {
                     spawnCooldown = 3f;
-                } else if(roundManager.roundNum < 9)
+                } else if(roundManager.roundNum <= 12)
                 {
                     spawnCooldown = 2f;
-                } else if(roundManager.roundNum >= 9)
+                } else if(roundManager.roundNum <= 15)
                 {
                     spawnCooldown = 1f;
                 }

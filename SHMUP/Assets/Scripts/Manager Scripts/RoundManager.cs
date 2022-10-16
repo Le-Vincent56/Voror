@@ -16,7 +16,8 @@ public enum RoundState
     Spawning,
     MidRound,
     EndRound,
-    Lose
+    Lose,
+    Win
 }
 
 public class RoundManager : MonoBehaviour
@@ -93,7 +94,7 @@ public class RoundManager : MonoBehaviour
                 // Reset bonus timer
                 if(pointsTimer <= 0)
                 {
-                    pointsTimer = 5f;
+                    pointsTimer = 1.5f;
                 }
 
                 // Add round change condition
@@ -152,7 +153,12 @@ public class RoundManager : MonoBehaviour
                 // Reset spawning timer
                 if(spawningTimer <= 0)
                 {
-                    spawningTimer = 5f;
+                    spawningTimer = 2f;
+                }
+
+                if(roundNum >= 15)
+                {
+                    roundState = RoundState.Win;
                 }
 
                 // Add round change condition
@@ -164,6 +170,10 @@ public class RoundManager : MonoBehaviour
 
             case RoundState.Lose:
                 SceneManager.LoadScene("Lose Screen");
+                break;
+
+            case RoundState.Win:
+                SceneManager.LoadScene("Win Screen");
                 break;
         }
     }

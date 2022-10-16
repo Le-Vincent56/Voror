@@ -131,6 +131,24 @@ public class CollisionManager : MonoBehaviour
         #region ENEMY BULLET COLLISIONS
         foreach (GameObject bullet in bulletManager.enemyBulletList)
         {
+            // Check for player collisions
+            if (player != null && !recentCollision)
+            {
+                if (AABBCollision(bullet, player))
+                {
+                    // Trigger a recent collision
+                    recentCollision = true;
+
+                    // Damage the player
+                    player.GetComponent<PlayerStats>().currentHealth -= bullet.GetComponent<EnemyBullet>().damage;
+                    player.GetComponent<SpriteRenderer>().color = Color.red;
+
+                    // Destroy the bullet
+                    bulletManager.destroyedEnemyBullets.Add(bullet);
+                }
+            }
+
+            // Check for villager collisions
             foreach (GameObject villager in villagerManager.villagers)
             {
                 if (villager != null)
@@ -148,22 +166,6 @@ public class CollisionManager : MonoBehaviour
                     }
                 }
             }
-
-            if(player != null && !recentCollision)
-            {
-                if(AABBCollision(bullet, player))
-                {
-                    // Trigger a recent collision
-                    recentCollision = true;
-
-                    // Damage the player
-                    player.GetComponent<PlayerStats>().currentHealth -= bullet.GetComponent<EnemyBullet>().damage;
-                    player.GetComponent<SpriteRenderer>().color = Color.red;
-
-                    // Destroy the bullet
-                    bulletManager.destroyedEnemyBullets.Add(bullet);
-                }
-            }
         }
         #endregion
 
@@ -175,7 +177,7 @@ public class CollisionManager : MonoBehaviour
             {
                 if (enemy != null)
                 {
-                    if (!villager.GetComponent<VillagerStats>().collided)
+                    if (!villager.GetComponent<VillagerStats>().collided && enemy.GetComponent<EnemyStats>().canBeDamaged)
                     {
                         if (AABBCollision(villager, enemy))
                         {

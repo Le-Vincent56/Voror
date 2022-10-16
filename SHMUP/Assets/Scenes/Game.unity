@@ -857,11 +857,13 @@ MonoBehaviour:
   - {fileID: 9209011219480529843, guid: 84a98b7a5352a26499a32349e59254f6, type: 3}
   - {fileID: 5265012482447096, guid: fa723635f4dc9fc43b5c9858bd422ea8, type: 3}
   - {fileID: 383131648403456440, guid: 0278092889ef55943ad5acbc6cced9b8, type: 3}
+  - {fileID: 561580307826787096, guid: 6d3bf4413f4cada4ea0abe2eda5e72a9, type: 3}
   sigils: []
   destroyedSigils: []
   collisionManager: {fileID: 548722580}
   bulletManager: {fileID: 1458930089}
   player: {fileID: 87185502}
+  villagerManager: {fileID: 1119206268}
   canSpawnSigil: 0
   maxSigilCount: 1
   sigilsSpawnedThisRound: 0

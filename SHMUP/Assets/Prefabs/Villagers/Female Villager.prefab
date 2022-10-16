@@ -97,8 +97,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a24d4f6c917b1df49abe980d9ee5a0de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 50
-  currentHealth: 50
+  maxHealth: 70
+  currentHealth: 70
   collided: 0
-  collisionTimer: 1.5
+  collisionTimer: 2
   colorTimer: 0.5

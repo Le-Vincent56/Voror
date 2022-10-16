@@ -10,6 +10,7 @@ public class SigilManager : MonoBehaviour
     [SerializeField] CollisionManager collisionManager;
     [SerializeField] BulletManager bulletManager;
     [SerializeField] GameObject player;
+    [SerializeField] VillagerManager villagerManager;
 
     [SerializeField] bool canSpawnSigil = false;
     [SerializeField] float maxSigilCount = 1;
@@ -133,6 +134,24 @@ public class SigilManager : MonoBehaviour
                         }
                     }
                     break;
+
+                case "Eir":
+                    if (sigil.GetComponent<Sigil>().active)
+                    {
+                        noneActive = true;
+
+                        // Fully heal the player and the villagers
+                        foreach (GameObject villager in villagerManager.villagers)
+                        {
+                            villager.GetComponent<VillagerStats>().currentHealth = villager.GetComponent<VillagerStats>().maxHealth;
+                        }
+
+                        player.GetComponent<PlayerStats>().currentHealth = player.GetComponent<PlayerStats>().maxHealth;
+
+                        sigil.GetComponent<Sigil>().active = false;
+                        noneActive = true;
+                    }
+                    break;
             }
         }
     }
@@ -194,13 +213,16 @@ public class SigilManager : MonoBehaviour
         {
             randomSigil = sigilPrefabs[0];
         }
-        else if (randVal < 0.76f) // 50% Loki sigil
+        else if (randVal < 0.46f) // 30% Loki sigil
         {
             randomSigil = sigilPrefabs[1];
         }
-        else // 35% Thor sigil
+        else if(randVal < 0.76)// 30% Thor sigil
         {
             randomSigil = sigilPrefabs[2];
+        } else // 25% Eir sigil
+        {
+            randomSigil = sigilPrefabs[3];
         }
 
         return randomSigil;
