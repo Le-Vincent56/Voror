@@ -29,11 +29,12 @@ public class RoundManager : MonoBehaviour
     [SerializeField] EnemyManager enemyManager;
     [SerializeField] VillagerManager villagerManager;
     [SerializeField] SigilManager sigilManager;
+    [SerializeField] BulletManager bulletManager;
     [SerializeField] GameObject player;
     [SerializeField] HUDManager HUDManager;
 
-    float spawningTimer = 5f;
-    float pointsTimer = 5f;
+    float spawningTimer = 2f;
+    float pointsTimer = 1.5f;
 
     bool initialSpawned = false;
     bool completedEndChecks = false;
@@ -64,6 +65,12 @@ public class RoundManager : MonoBehaviour
                     roundNum += 1;
                     HUDManager.roundNum = roundNum;
                     sigilManager.sigilsSpawnedThisRound = 0;
+
+                    // Increment player bullet damage
+                    foreach(GameObject bullet in bulletManager.bulletPrefabs)
+                    {
+                        bullet.GetComponent<Bullet>().damage += 0.25f;
+                    }
 
                     // Set enemy spawning variables and spawn starting enemies
                     enemyManager.enemiesSpawnedThisRound = 0;
@@ -130,7 +137,8 @@ public class RoundManager : MonoBehaviour
                 if (!completedEndChecks)
                 {
                     // Calculate next round enemy numbers
-                    enemyManager.baseEnemies += (1 * roundNum);
+                    enemyManager.baseEnemies = (1 * roundNum);
+                    enemyManager.spawnCooldown = 3f;
 
                     // Add bonuses from alive villagers
                     villagerManager.CalculateAliveBonuses();

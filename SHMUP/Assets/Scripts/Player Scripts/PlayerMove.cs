@@ -11,8 +11,14 @@ public class PlayerMove : MonoBehaviour
     Vector3 velocity = new Vector3(0, 0, 0);
 
     public float speed = 3f;
+    public float dashSpeed = 30f;
 
     public bool moving = false;
+    public bool dashing = false;
+    public float dashTimer = 0.2f;
+    public float dashCooldown = 1f;
+    public bool canDash = true;
+    public float dashDamage = 10f;
 
     [SerializeField] Camera cam;
     float camHeight;
@@ -32,23 +38,68 @@ public class PlayerMove : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        moving = false;
-
-        // Calculate velocity
-        velocity = direction * speed * Time.deltaTime;
-
-        if(velocity != Vector3.zero)
+        if (!dashing)
         {
-            moving = true;
+            moving = false;
+
+            // Calculate velocity
+            velocity = direction * speed * Time.deltaTime;
+
+            if (velocity != Vector3.zero)
+            {
+                moving = true;
+            }
+
+            if (moving)
+            {
+                // Add the velocity to the player position
+                playerPosition += velocity;
+
+                // Draw the player at the position
+                transform.position = playerPosition;
+            }
+        } else if (dashTimer > 0)
+        {
+            dashTimer -= Time.deltaTime;
+
+            moving = false;
+
+            // Calculate velocity
+            velocity = direction * dashSpeed * Time.deltaTime;
+
+            if (velocity != Vector3.zero)
+            {
+                moving = true;
+            }
+
+            if (moving)
+            {
+                // Add the velocity to the player position
+                playerPosition += velocity;
+
+                // Draw the player at the position
+                transform.position = playerPosition;
+            }
+        }
+        else
+        {
+            dashing = false;
+            dashTimer = 0.1f;
+            direction = Vector3.zero;
+            canDash = false;
         }
 
-        if (moving)
+        if (!canDash)
         {
-            // Add the velocity to the player position
-            playerPosition += velocity;
-
-            // Draw the player at the position
-            transform.position = playerPosition;
+            if (dashCooldown > 0)
+            {
+                dashCooldown -= Time.deltaTime;
+            }
+            else
+            {
+                canDash = true;
+                dashCooldown = 1f;
+            }
         }
 
         CheckBounds();
@@ -80,14 +131,37 @@ public class PlayerMove : MonoBehaviour
     /// <param name="context">The Callback Context from the Move event</param>
     public void OnMove(InputAction.CallbackContext context)
     {
-        // Get the direction vector based on player input
-        direction = context.ReadValue<Vector2>();
+        if (!dashing)
+        {
+            // Get the direction vector based on player input
+            direction = context.ReadValue<Vector2>();
 
-        // Flip the sprite depending on the direction
-        if(direction.x > 0)
+            // Flip the sprite depending on the direction
+            if (direction.x > 0)
+            {
+                GetComponent<SpriteRenderer>().flipX = false;
+            }
+            else if (direction.x < 0)
+            {
+                GetComponent<SpriteRenderer>().flipX = true;
+            }
+        }
+    }
+
+    public void OnDash(InputAction.CallbackContext context)
+    {
+        if (!dashing && canDash)
+        {
+            dashing = true;
+            Vector3 mousePos = cam.ScreenToWorldPoint(new Vector3(Mouse.current.position.ReadValue().x, Mouse.current.position.ReadValue().y, 0));
+            direction = new Vector3(mousePos.x - playerPosition.x, mousePos.y - playerPosition.y, 0).normalized;
+        }
+
+        if (direction.x > 0)
         {
             GetComponent<SpriteRenderer>().flipX = false;
-        } else if(direction.x < 0)
+        }
+        else if (direction.x < 0)
         {
             GetComponent<SpriteRenderer>().flipX = true;
         }

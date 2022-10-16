@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 public class BulletManager : MonoBehaviour
 {
     #region FIELDS
-    [SerializeField] List<GameObject> bulletPrefabs;
+    public List<GameObject> bulletPrefabs;
     [SerializeField] GameObject enemyBulletPrefab;
     [SerializeField] GameObject player;
     [SerializeField] EnemyManager enemyManager;

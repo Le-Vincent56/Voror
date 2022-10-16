@@ -5,6 +5,7 @@ using UnityEngine;
 public class EnemyManager : MonoBehaviour
 {
     #region FIELDS
+    [SerializeField] RoundManager roundManager;
     [SerializeField] GameObject player;
     [SerializeField] List<GameObject> enemyPrefabs;
     public List<GameObject> enemies;
@@ -16,10 +17,10 @@ public class EnemyManager : MonoBehaviour
     public int maxEnemiesThisRound = 3;
     public int enemiesSpawnedThisRound = 0;
     public int baseEnemies = 1;
-    public int bonusEnemiesPerRound = 2;
+    public int bonusEnemiesPerRound = 1;
 
-    float spawnCooldown = 3f;
-    bool canSpawnEnemy = true;
+    public float spawnCooldown = 3f;
+    [SerializeField] bool canSpawnEnemy = true;
 
 
     float camHeight;
@@ -123,9 +124,18 @@ public class EnemyManager : MonoBehaviour
             {
                 spawnCooldown -= Time.deltaTime;
             }
-            else
+            else if(spawnCooldown < 0)
             {
-                spawnCooldown = 3f;
+                if(roundManager.roundNum < 3)
+                {
+                    spawnCooldown = 3f;
+                } else if(roundManager.roundNum < 9)
+                {
+                    spawnCooldown = 2f;
+                } else if(roundManager.roundNum >= 9)
+                {
+                    spawnCooldown = 1f;
+                }
                 canSpawnEnemy = true;
             }
 

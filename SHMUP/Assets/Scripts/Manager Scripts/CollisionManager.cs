@@ -55,22 +55,46 @@ public class CollisionManager : MonoBehaviour
             player.GetComponent<SpriteRenderer>().color = Color.white;
         }
 
-        // Check each object within the list
-        foreach (GameObject enemy in enemyManager.enemies)
+        // Check if the player is dashing
+        if (player.GetComponent<PlayerMove>().dashing)
         {
-            if(enemy != null)
+            // Check each object within the list
+            foreach(GameObject enemy in enemyManager.enemies)
             {
-                // If there are no current collisions, check for collisions
-                if (recentCollision == false && enemy.GetComponent<EnemyStats>().canBeDamaged)
+                if(enemy != null)
                 {
                     if (AABBCollision(player, enemy))
                     {
-                        recentCollision = true;
+                        // Tell the enemy it has been collided with
+                        enemy.GetComponent<EnemyStats>().collided = true;
 
-                        // Change color if colliding
-                        player.GetComponent<PlayerStats>().currentHealth -= enemy.GetComponent<EnemyStats>().damage;
-                        player.GetComponent<SpriteRenderer>().color = Color.red;
-                        enemy.GetComponent<SpriteRenderer>().color = Color.red;
+                        if (enemy.GetComponent<EnemyStats>().canBeDamaged)
+                        {
+                            // Damage the enemy with the dash damage
+                            enemy.GetComponent<EnemyStats>().currentHealth -= player.GetComponent<PlayerMove>().dashDamage;
+                        }
+                    }
+                }
+            }
+        } else // If not, check for collision normally
+        {
+            // Check each object within the list
+            foreach (GameObject enemy in enemyManager.enemies)
+            {
+                if (enemy != null)
+                {
+                    // If there are no current collisions, check for collisions
+                    if (recentCollision == false && enemy.GetComponent<EnemyStats>().canBeDamaged)
+                    {
+                        if (AABBCollision(player, enemy))
+                        {
+                            recentCollision = true;
+
+                            // Change color if colliding
+                            player.GetComponent<PlayerStats>().currentHealth -= enemy.GetComponent<EnemyStats>().damage;
+                            player.GetComponent<SpriteRenderer>().color = Color.red;
+                            enemy.GetComponent<SpriteRenderer>().color = Color.red;
+                        }
                     }
                 }
             }
