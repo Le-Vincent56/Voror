@@ -9,7 +9,7 @@ public class VillagerManager : MonoBehaviour
     public List<GameObject> villagers;
     [SerializeField] List<GameObject> destroyedVillagers;
     [SerializeField] EnemyManager enemyManager;
-    [SerializeField] GameObject HUD;
+    [SerializeField] GameObject score;
 
     Vector3 minSpawnPoint;
     Vector3 maxSpawnPoint;
@@ -24,6 +24,8 @@ public class VillagerManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        score = GameObject.Find("Score");
+
         // Set bounds
         camHeight = cam.orthographicSize / 2;
         camWidth = camHeight * cam.aspect;
@@ -46,6 +48,9 @@ public class VillagerManager : MonoBehaviour
         RemoveDestroyedVillagers();
     }
 
+    /// <summary>
+    /// Calculate the score bonuses for how many villagers are currently alive
+    /// </summary>
     public void CalculateAliveBonuses()
     {
         // Add bonuses to the score depending on how many villagers are alive
@@ -55,19 +60,22 @@ public class VillagerManager : MonoBehaviour
                 break;
 
             case 1:
-                HUD.GetComponent<HUDManager>().score += 5;
+                score.GetComponent<ScoreMaster>().score += 5;
                 break;
 
             case 2:
-                HUD.GetComponent<HUDManager>().score += 10;
+                score.GetComponent<ScoreMaster>().score += 10;
                 break;
 
             case 3:
-                HUD.GetComponent<HUDManager>().score += 20;
+                score.GetComponent<ScoreMaster>().score += 20;
                 break;
         }
     }
 
+    /// <summary>
+    /// Make colliding villagers blink
+    /// </summary>
     public void BlinkOnCollision()
     {
         foreach (GameObject villager in villagers)
@@ -92,6 +100,9 @@ public class VillagerManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Spawn the max amount of villagers
+    /// </summary>
     public void SpawnVillagers()
     {
         for(int i = 0; i < maxVillagerCount; i++)
@@ -100,6 +111,10 @@ public class VillagerManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Creates a randomly generated villager at a random point within the inner area of the screen
+    /// </summary>
+    /// <returns>A randomly generated villager within a random point of the inner area of the screen</returns>
     public GameObject CreateVillager()
     {
         // Create a reference with a random spawnpoint and enemy type
@@ -113,6 +128,10 @@ public class VillagerManager : MonoBehaviour
         return villager;
     }
 
+    /// <summary>
+    /// Pick a random villager sprite
+    /// </summary>
+    /// <returns>A random villager object with a random sprite</returns>
     public GameObject PickRandomVillagerSprite()
     {
         GameObject randomVillager;
@@ -135,6 +154,10 @@ public class VillagerManager : MonoBehaviour
         return randomVillager;
     }
 
+    /// <summary>
+    /// Pick a random spawn point within certain bounds
+    /// </summary>
+    /// <returns>A Vector3 that represents the spawn point</returns>
     public Vector3 PickSpawnPoint()
     {
         float randValX = Random.Range(minSpawnPoint.x, maxSpawnPoint.x);
@@ -143,6 +166,9 @@ public class VillagerManager : MonoBehaviour
         return new Vector3(randValX, randValY, 0);
     }
 
+    /// <summary>
+    /// Check to see if any villagers should be destroyed
+    /// </summary>
     public void CheckDestroyedVillagers()
     {
         foreach (GameObject villager in villagers)
@@ -154,6 +180,9 @@ public class VillagerManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Remove any villagers that are meant to be destroyed
+    /// </summary>
     public void RemoveDestroyedVillagers()
     {
         // Check the list of destroyed villagers

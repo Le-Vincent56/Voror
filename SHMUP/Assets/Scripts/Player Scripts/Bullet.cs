@@ -35,5 +35,11 @@ public class Bullet : MonoBehaviour
 
         // Draw the bullet at the position
         transform.position = bulletPosition;
+
+        // Rotate the bullet to look in the direction its going towards
+        if (bulletDirection != Vector3.zero)
+        {
+            transform.rotation = Quaternion.LookRotation(Vector3.back, bulletDirection);
+        }
     }
 }

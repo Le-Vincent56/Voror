@@ -13,11 +13,18 @@ public class PlayerMove : MonoBehaviour
     public float speed = 3f;
 
     public bool moving = false;
+
+    [SerializeField] Camera cam;
+    float camHeight;
+    float camWidth;
     #endregion
 
     // Start is called before the first frame update
     void Start()
     {
+        camHeight = cam.orthographicSize;
+        camWidth = camHeight * cam.aspect;
+
         // Set the player position
         playerPosition = transform.position;
     }
@@ -42,6 +49,28 @@ public class PlayerMove : MonoBehaviour
 
             // Draw the player at the position
             transform.position = playerPosition;
+        }
+
+        CheckBounds();
+    }
+
+    public void CheckBounds()
+    {
+        if(playerPosition.x < -camWidth)
+        {
+            playerPosition.x = -camWidth;
+        } else if(playerPosition.x > camWidth)
+        {
+            playerPosition.x = camWidth;
+        }
+
+        if (playerPosition.y < -camHeight)
+        {
+            playerPosition.y = -camHeight;
+        }
+        else if (playerPosition.y > camHeight)
+        {
+            playerPosition.y = camHeight;
         }
     }
 

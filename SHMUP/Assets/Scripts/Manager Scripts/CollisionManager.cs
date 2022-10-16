@@ -4,13 +4,12 @@ using UnityEngine;
 
 public class CollisionManager : MonoBehaviour
 {
-    [SerializeField] List<GameObject> enemies;
     [SerializeField] BulletManager bulletManager;
-    [SerializeField] List<GameObject> bulletList;
     [SerializeField] GameObject player;
     [SerializeField] List<GameObject> villagers;
     [SerializeField] VillagerManager villagerManager;
     [SerializeField] EnemyManager enemyManager;
+    [SerializeField] SigilManager sigilManager;
 
     public bool recentCollision = false;
     public float collisionTimer = 3f;
@@ -20,10 +19,6 @@ public class CollisionManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        bulletList = bulletManager.bulletList;
-        enemies = enemyManager.enemies;
-        villagers = villagerManager.villagers;
-
         #region PLAYER COLLISIONS
         // Check if there has been enough time to check for another collision
         if (collisionTimer <= 0)
@@ -61,12 +56,12 @@ public class CollisionManager : MonoBehaviour
         }
 
         // Check each object within the list
-        foreach (GameObject enemy in enemies)
+        foreach (GameObject enemy in enemyManager.enemies)
         {
             if(enemy != null)
             {
                 // If there are no current collisions, check for collisions
-                if (recentCollision == false)
+                if (recentCollision == false && enemy.GetComponent<EnemyStats>().canBeDamaged)
                 {
                     if (AABBCollision(player, enemy))
                     {
@@ -82,35 +77,85 @@ public class CollisionManager : MonoBehaviour
         }
         #endregion
 
-        #region BULLET COLLISIONS
-        foreach (GameObject bullet in bulletList)
+        #region PLAYER BULLET COLLISIONS
+        // Check each bullet to see if it collides with an enemy
+        foreach (GameObject bullet in bulletManager.bulletList)
         {
-            foreach (GameObject enemy in enemies)
+            foreach (GameObject enemy in enemyManager.enemies)
             {
                 if(enemy != null)
                 {
                     if (AABBCollision(bullet, enemy))
                     {
+                        // Tell the enemy it has been collided with
                         enemy.GetComponent<EnemyStats>().collided = true;
-                        enemy.GetComponent<EnemyStats>().currentHealth -= bullet.GetComponent<Bullet>().damage;
-                        bulletManager.GetComponent<BulletManager>().destroyedBullets.Add(bullet);
+
+                        // If it can, take damage
+                        if (enemy.GetComponent<EnemyStats>().canBeDamaged)
+                        {
+                            enemy.GetComponent<EnemyStats>().currentHealth -= bullet.GetComponent<Bullet>().damage;
+                        }
+
+                        // Destroy the bullet
+                        bulletManager.destroyedBullets.Add(bullet);
                     }
                 }
             }
         }
         #endregion
 
-        #region VILLAGER COLLISIONS
-        foreach(GameObject villager in villagers)
+        #region ENEMY BULLET COLLISIONS
+        foreach (GameObject bullet in bulletManager.enemyBulletList)
         {
-            foreach (GameObject enemy in enemies)
+            foreach (GameObject villager in villagerManager.villagers)
             {
-                if(enemy != null)
+                if (villager != null)
+                {
+                    if (AABBCollision(bullet, villager))
+                    {
+                        // Tell the villager it has been collided with
+                        villager.GetComponent<VillagerStats>().collided = true;
+
+                        // Damage the villager
+                        villager.GetComponent<VillagerStats>().currentHealth -= bullet.GetComponent<EnemyBullet>().damage;
+
+                        // Destroy the bullet
+                        bulletManager.destroyedEnemyBullets.Add(bullet);
+                    }
+                }
+            }
+
+            if(player != null && !recentCollision)
+            {
+                if(AABBCollision(bullet, player))
+                {
+                    // Trigger a recent collision
+                    recentCollision = true;
+
+                    // Damage the player
+                    player.GetComponent<PlayerStats>().currentHealth -= bullet.GetComponent<EnemyBullet>().damage;
+                    player.GetComponent<SpriteRenderer>().color = Color.red;
+
+                    // Destroy the bullet
+                    bulletManager.destroyedEnemyBullets.Add(bullet);
+                }
+            }
+        }
+        #endregion
+
+        #region VILLAGER COLLISIONS
+        // Check collisions between each villager and each enemy
+        foreach (GameObject villager in villagerManager.villagers)
+        {
+            foreach (GameObject enemy in enemyManager.enemies)
+            {
+                if (enemy != null)
                 {
                     if (!villager.GetComponent<VillagerStats>().collided)
                     {
                         if (AABBCollision(villager, enemy))
                         {
+                            // Tell the villager it has experienced a collision and take damage
                             villager.GetComponent<VillagerStats>().collided = true;
                             villager.GetComponent<VillagerStats>().currentHealth -= enemy.GetComponent<EnemyStats>().damage;
                         }
@@ -118,6 +163,37 @@ public class CollisionManager : MonoBehaviour
                 }
             }
         }
+        #endregion
+
+        #region SIGIL COLLISION
+        foreach (GameObject sigil in sigilManager.sigils)
+        {
+            if(AABBCollision(player, sigil))
+            {
+                sigil.GetComponent<Sigil>().active = true;
+                sigil.transform.position = new Vector3(999, 999, 99);
+                sigilManager.destroyedSigils.Add(sigil);
+            }
+        }
+
+        #region STORM COLLISION
+        if (player.GetComponent<Storm>().active)
+        {
+            if(player.GetComponent<Storm>().stormState == StormState.Damaging)
+            {
+                foreach(GameObject enemy in enemyManager.enemies)
+                {
+                    if(enemy != null)
+                    {
+                        if(CircleCollision(enemy, player.GetComponent<Storm>().stormCrosshair))
+                        {
+                            enemy.GetComponent<EnemyStats>().currentHealth -= player.GetComponent<Storm>().stormDamage;
+                        }
+                    }
+                }
+            }
+        }
+        #endregion
         #endregion
     }
 
@@ -142,6 +218,38 @@ public class CollisionManager : MonoBehaviour
 
         // If all conditions are met, return true, otherwise return false
         if (BMinX < AMaxX && BMaxX > AMinX && BMaxY > AMinY && BMinY < AMaxY)
+        {
+            return true;
+        }
+        else return false;
+    }
+
+    /// <summary>
+    /// Detect collision between two GameObjects using Circles
+    /// </summary>
+    /// <param name="spaceship">The spaceship GameObject</param>
+    /// <param name="asteroid">The asteroid GameObject</param>
+    /// <returns>A boolean stating if the two GameObjects are colliding</returns>
+    public bool CircleCollision(GameObject spaceship, GameObject asteroid)
+    {
+        // Get the radii of the two GameObjects
+        Vector3 spaceshipRadiusVector = spaceship.GetComponent<SpriteRenderer>().bounds.max - spaceship.GetComponent<SpriteRenderer>().bounds.center;
+        float spaceshipRadius = spaceshipRadiusVector.magnitude;
+
+        Vector3 asteroidRadiusVector = asteroid.GetComponent<SpriteRenderer>().bounds.max - asteroid.GetComponent<SpriteRenderer>().bounds.center;
+        float asteroidRadius = asteroidRadiusVector.magnitude;
+
+        // Combine the radii
+        float unitedRadiiSquared = Mathf.Pow(spaceshipRadius + asteroidRadius, 2);
+
+        // Get distances between the centers of the two GameObjects
+        Vector3 distance = asteroid.GetComponent<SpriteRenderer>().bounds.center - spaceship.GetComponent<SpriteRenderer>().bounds.center;
+        float distanceF = distance.magnitude;
+        float distanceSquared = Mathf.Pow(distanceF, 2);
+
+        // If the distance between the two centers are less than the sum of their radii, return true
+        // otherwise, return false
+        if (distanceSquared < unitedRadiiSquared)
         {
             return true;
         }

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public enum GameState {
     Start,
@@ -24,41 +25,59 @@ public class RoundManager : MonoBehaviour
     public RoundState roundState;
     public int roundNum = 0;
 
+    public GameObject score;
     [SerializeField] EnemyManager enemyManager;
     [SerializeField] VillagerManager villagerManager;
+    [SerializeField] SigilManager sigilManager;
     [SerializeField] GameObject player;
+    [SerializeField] HUDManager HUDManager;
 
     float spawningTimer = 5f;
     float pointsTimer = 5f;
+
+    bool initialSpawned = false;
+    bool completedEndChecks = false;
     #endregion
 
     // Start is called before the first frame update
     void Start()
     {
+        score = GameObject.Find("Score");
         roundState = RoundState.Spawning;
+        score.GetComponent<ScoreMaster>().score = 0;
     }
 
     // Update is called once per frame
     void Update()
     {
+
         switch (roundState)
         {
             case RoundState.None:
                 break;
 
             case RoundState.Spawning:
-                // Increment round number
-                roundNum += 1;
-
                 // Reset enemy numbers and spawn starting enemies
-                enemyManager.enemiesSpawnedThisRound = 0;
-                enemyManager.maxEnemiesThisRound = enemyManager.baseEnemies + (enemyManager.bonusEnemiesPerRound * roundNum);
-                enemyManager.SpawnStartingEnemies();
-
-                // Freeze the enemies
-                foreach (GameObject enemy in enemyManager.enemies)
+                if (!initialSpawned)
                 {
-                    enemy.GetComponent<EnemyMovement>().moving = false;
+                    // Increment round number
+                    roundNum += 1;
+                    HUDManager.roundNum = roundNum;
+                    sigilManager.sigilsSpawnedThisRound = 0;
+
+                    // Set enemy spawning variables and spawn starting enemies
+                    enemyManager.enemiesSpawnedThisRound = 0;
+                    enemyManager.maxEnemiesThisRound = enemyManager.baseEnemies + (enemyManager.bonusEnemiesPerRound * roundNum);
+                    enemyManager.SpawnStartingEnemies();
+
+                    // Freeze the enemies and prevent them from being damaged
+                    foreach (GameObject enemy in enemyManager.enemies)
+                    {
+                        enemy.GetComponent<EnemyMovement>().moving = false;
+                        enemy.GetComponent<EnemyStats>().canBeDamaged = false;
+                    }
+                    initialSpawned = true;
+                    completedEndChecks = false;
                 }
 
                 // Subtract time from the spawning time
@@ -82,10 +101,14 @@ public class RoundManager : MonoBehaviour
                 // Spawn enemies if possible
                 enemyManager.SpawnEnemy();
 
-                // Let the enemies move
+                // Spawn sigils if possible
+                sigilManager.SpawnSigil();
+
+                // Let the enemies move and allow them to be damaged
                 foreach(GameObject enemy in enemyManager.enemies)
                 {
                     enemy.GetComponent<EnemyMovement>().moving = true;
+                    enemy.GetComponent<EnemyStats>().canBeDamaged = true;
                 }
 
                 // Add round change condition
@@ -104,11 +127,16 @@ public class RoundManager : MonoBehaviour
                 break;
 
             case RoundState.EndRound:
-                // Calculate next round enemy numbers
-                enemyManager.baseEnemies += (1 * roundNum);
+                if (!completedEndChecks)
+                {
+                    // Calculate next round enemy numbers
+                    enemyManager.baseEnemies += (1 * roundNum);
 
-                // Add bonuses from alive villagers
-                villagerManager.CalculateAliveBonuses();
+                    // Add bonuses from alive villagers
+                    villagerManager.CalculateAliveBonuses();
+                    initialSpawned = false;
+                    completedEndChecks = true;
+                }                
 
                 // Subtract time from the spawning time
                 pointsTimer -= Time.deltaTime;
@@ -127,7 +155,7 @@ public class RoundManager : MonoBehaviour
                 break;
 
             case RoundState.Lose:
-                
+                SceneManager.LoadScene("Lose Screen");
                 break;
         }
     }

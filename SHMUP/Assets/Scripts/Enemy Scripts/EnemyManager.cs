@@ -9,12 +9,14 @@ public class EnemyManager : MonoBehaviour
     [SerializeField] List<GameObject> enemyPrefabs;
     public List<GameObject> enemies;
     [SerializeField] List<GameObject> destroyedEnemies;
-    [SerializeField] GameObject HUD;
     [SerializeField] Camera cam;
-    public int maxEnemiesThisRound = 5;
+    [SerializeField] CollisionManager collisionManager;
+    [SerializeField] VillagerManager villagerManager;
+    [SerializeField] GameObject score;
+    public int maxEnemiesThisRound = 3;
     public int enemiesSpawnedThisRound = 0;
-    public int baseEnemies = 5;
-    public int bonusEnemiesPerRound = 3;
+    public int baseEnemies = 1;
+    public int bonusEnemiesPerRound = 2;
 
     float spawnCooldown = 3f;
     bool canSpawnEnemy = true;
@@ -30,6 +32,8 @@ public class EnemyManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        score = GameObject.Find("Score");
+
         // Set bounds
         camHeight = cam.orthographicSize;
         camWidth = camHeight * cam.aspect;
@@ -58,17 +62,33 @@ public class EnemyManager : MonoBehaviour
         {
             if (enemy.GetComponent<EnemyStats>().collided)
             {
-                if(enemy.GetComponent<EnemyStats>().colorTimer > 0)
+                if (enemy.GetComponent<EnemyStats>().canBeDamaged)
                 {
-                    enemy.GetComponent<SpriteRenderer>().color = Color.red;
-                    enemy.GetComponent<EnemyStats>().colorTimer -= Time.deltaTime;
+                    if (enemy.GetComponent<EnemyStats>().damageColorTimer > 0)
+                    {
+                        enemy.GetComponent<SpriteRenderer>().color = Color.red;
+                        enemy.GetComponent<EnemyStats>().damageColorTimer -= Time.deltaTime;
+                    }
+                    else
+                    {
+                        enemy.GetComponent<EnemyStats>().collided = false;
+                    }
                 } else
                 {
-                    enemy.GetComponent<EnemyStats>().collided = false;
+                    if (enemy.GetComponent<EnemyStats>().invincibleColorTimer > 0)
+                    {
+                        enemy.GetComponent<SpriteRenderer>().color = Color.gray;
+                        enemy.GetComponent<EnemyStats>().invincibleColorTimer -= Time.deltaTime;
+                    }
+                    else
+                    {
+                        enemy.GetComponent<EnemyStats>().collided = false;
+                    }
                 }
             } else
             {
-                enemy.GetComponent<EnemyStats>().colorTimer = 0.5f;
+                enemy.GetComponent<EnemyStats>().invincibleColorTimer = 0.5f;
+                enemy.GetComponent<EnemyStats>().damageColorTimer = 0.5f;
                 enemy.GetComponent<SpriteRenderer>().color = Color.white;
             }
         }
@@ -82,6 +102,7 @@ public class EnemyManager : MonoBehaviour
         for (int i = 0; i < baseEnemies; i++)
         {
             enemies.Add(CreateEnemy());
+            enemiesSpawnedThisRound++;
         }
     }
 
@@ -93,7 +114,7 @@ public class EnemyManager : MonoBehaviour
         if (enemiesSpawnedThisRound < maxEnemiesThisRound && canSpawnEnemy)
         {
             enemies.Add(CreateEnemy());
-            enemiesSpawnedThisRound = 0;
+            enemiesSpawnedThisRound++;
             canSpawnEnemy = false;
         }
         else if (!canSpawnEnemy)
@@ -119,9 +140,33 @@ public class EnemyManager : MonoBehaviour
     {
         // Create a reference with a random spawnpoint and enemy type
         GameObject enemy;
-        Vector3 spawnPoint = PickSpawnPoint();
+        Vector3 spawnPoint = Vector3.zero;
+        bool validSpawnPoint = false;
 
-        // Instantiate the enemy
+        // Test if the spawn point is valid, if not, generate a new one
+        while (!validSpawnPoint)
+        {
+            Vector3 temporarySpawnPoint = PickSpawnPoint();
+            GameObject tempEnemy;
+            tempEnemy = Instantiate(PickRandomEnemy(), temporarySpawnPoint, Quaternion.identity, transform);
+
+            // A spawnpoint is valid depending if there is a villager collision
+            foreach(GameObject villager in villagerManager.villagers)
+            {
+                if (collisionManager.AABBCollision(tempEnemy, villager))
+                {
+                    Destroy(tempEnemy);
+                    validSpawnPoint = false;
+                } else
+                {
+                    Destroy(tempEnemy);
+                    spawnPoint = temporarySpawnPoint;
+                    validSpawnPoint = true;
+                }
+            }
+        }
+        
+        // Set the final enemy
         enemy = Instantiate(PickRandomEnemy(), spawnPoint, Quaternion.identity, transform);
 
         // Return the enemy
@@ -184,7 +229,7 @@ public class EnemyManager : MonoBehaviour
             if(enemy.GetComponent<EnemyStats>().currentHealth <= 0)
             {
                 destroyedEnemies.Add(enemy);
-                HUD.GetComponent<HUDManager>().score += enemy.GetComponent<EnemyStats>().value;
+                score.GetComponent<ScoreMaster>().score += enemy.GetComponent<EnemyStats>().value;
             }
         }
     }
